@@ -13,9 +13,9 @@ export default function DashboardHome() {
           <p>Find highly compatible excipients for your specific dosage form and API.</p>
         </div>
         <div className="glass-panel delay-100">
-          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>💊</div>
-          <h3>Dosage Recommendation</h3>
-          <p>Discover the most suitable dosage forms for your target API.</p>
+          <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🧬</div>
+          <h3>BCS Classifier</h3>
+          <p>Classify your API by BCS class with solubility, permeability, and dosage insights.</p>
         </div>
         <div className="glass-panel delay-200">
           <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📚</div>

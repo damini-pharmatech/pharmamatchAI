@@ -23,8 +23,8 @@ export default function DashboardLayout({
           <a href="/dashboard/excipient-finder" className={`sidebar-link ${pathname?.includes('/excipient-finder') ? 'active' : ''}`}>
             🧪 Excipient Finder
           </a>
-          <a href="/dashboard/dosage-recommendation" className={`sidebar-link ${pathname?.includes('/dosage-recommendation') ? 'active' : ''}`}>
-            💊 Dosage Recommendation
+          <a href="/dashboard/bcs-classifier" className={`sidebar-link ${pathname?.includes('/bcs-classifier') ? 'active' : ''}`}>
+            🧬 BCS Classifier
           </a>
           <a href="/dashboard/paper-analysis" className={`sidebar-link ${pathname?.includes('/paper-analysis') ? 'active' : ''}`}>
             📚 Paper Analysis
