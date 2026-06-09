@@ -24,7 +24,6 @@ export default function RootLayout({
           </div>
           <div className="nav-links">
             <a href="/" className="nav-link">Home</a>
-            <a href="/auth" className="nav-link">Sign In</a>
             <a href="/dashboard" className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>Dashboard</a>
           </div>
         </nav>

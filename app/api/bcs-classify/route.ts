@@ -35,6 +35,7 @@ interface BCSEntry {
     formulations: string[];
   };
   source: string;
+  sourceUrl: string;
 }
 
 // Class-level enhancer strategies — each strategy has its own clickable reference.
@@ -51,7 +52,7 @@ const CLASS_ENHANCERS: Record<BCSClass, { solubility: EnhancerData; permeability
             "Ensure formulation pH is within the range where the drug remains fully solubilised. Relevant for oral liquid or parenteral formulations.",
           example: "Buffered tablet cores or pH-adjusted oral solutions for paracetamol.",
           reference: "FDA Guidance: Waiver of In Vivo BA/BE Studies, 2017",
-          referenceUrl: "https://www.fda.gov/media/70963/download",
+          referenceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
         },
         {
           name: "Cosolvent Addition (Liquids only)",
@@ -91,7 +92,7 @@ const CLASS_ENHANCERS: Record<BCSClass, { solubility: EnhancerData; permeability
             "Drug is molecularly dispersed in a hydrophilic polymer matrix (PVP, HPMC-AS, Soluplus). Converting crystalline drug to amorphous form eliminates the lattice energy barrier, increasing dissolution rate and apparent solubility by 10–1000×.",
           example: "Ibuprofen/PVP K30 ASD; Ketoconazole/HPMC-AS (Sporanox); Fenofibrate/PVP.",
           reference: "Leuner & Dressman — Improving Drug Solubility Using Solid Dispersions, Eur J Pharm Biopharm 2000",
-          referenceUrl: "https://doi.org/10.1016/S0939-6411(00)00085-4",
+          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/10840192/",
         },
         {
           name: "Cyclodextrin Complexation",
@@ -163,7 +164,7 @@ const CLASS_ENHANCERS: Record<BCSClass, { solubility: EnhancerData; permeability
             "Drug meets BCS high-solubility criteria (dose soluble in ≤250 mL water across pH 1–6.8). Simple aqueous formulations are adequate.",
           example: "Atenolol and metformin are freely soluble — standard wet granulation is sufficient.",
           reference: "FDA Guidance: Waiver of In Vivo BA/BE Studies, 2017",
-          referenceUrl: "https://www.fda.gov/media/70963/download",
+          referenceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
         },
       ],
     },
@@ -186,7 +187,7 @@ const CLASS_ENHANCERS: Record<BCSClass, { solubility: EnhancerData; permeability
             "Sodium caprate (C10) and sodium caprylate (C8) reversibly increase tight junction permeability by altering ZO-1 and occludin protein conformation at the apical membrane. Effect is transient and reversible within 60–90 min.",
           example: "Sodium caprate (C10) enhanced atenolol and ranitidine permeation in Caco-2 and rat jejunum models.",
           reference: "Salama NN et al. — The Effect of Absorption Enhancers on Tight Junction Components, Pharm Res 2006",
-          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/16636877/",
+          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/16517003/",
         },
         {
           name: "EDTA (Chelation of Ca²⁺)",
@@ -194,7 +195,7 @@ const CLASS_ENHANCERS: Record<BCSClass, { solubility: EnhancerData; permeability
             "Chelates Ca²⁺ ions that maintain tight junction integrity via cadherin-mediated signalling. Reversible opening of paracellular channels allows hydrophilic drug absorption without mucosal damage.",
           example: "EDTA (5 mM) enhanced atenolol permeation across Caco-2 monolayers and in rat intestinal perfusion studies.",
           reference: "Salama NN et al. — The Effect of Absorption Enhancers on Tight Junction Components, Pharm Res 2006",
-          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/16636877/",
+          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/16517003/",
         },
         {
           name: "Prodrug Strategy",
@@ -306,7 +307,7 @@ const CLASS_ENHANCERS: Record<BCSClass, { solubility: EnhancerData; permeability
             "Incorporating permeation enhancers (EDTA, C10) into nanoparticle formulations provides dual action: nanocarrier addresses solubility while the enhancer opens TJs for paracellular drug permeation.",
           example: "Furosemide-loaded PLGA nanoparticles with EDTA demonstrated additive permeability improvements in Caco-2 bidirectional transport studies.",
           reference: "Salama NN et al. — The Effect of Absorption Enhancers on Tight Junction Components, Pharm Res 2006",
-          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/16636877/",
+          referenceUrl: "https://pubmed.ncbi.nlm.nih.gov/16517003/",
         },
       ],
     },
@@ -343,6 +344,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017 / Amidon et al., Pharm Res 1995",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   metoprolol: {
     drug: "Metoprolol",
@@ -371,6 +373,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017 / FDA Biowaivers List",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   atenolol: {
     drug: "Atenolol",
@@ -399,6 +402,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "Amidon et al., Pharm Res 1995 / Lindenberg et al., EJP 2004",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/7617530/",
   },
   furosemide: {
     drug: "Furosemide",
@@ -426,7 +430,8 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
         "IV injection for guaranteed bioavailability",
       ],
     },
-    source: "FDA BCS Classification / Brouwers et al., AAPS J 2009",
+    source: "FDA BCS Classification / Dahan et al., AAPS J 2009",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/19876745/",
   },
   ranitidine: {
     drug: "Ranitidine",
@@ -454,6 +459,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "WHO BCS Classification / Lindenberg et al., EJP 2004",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/15296954/",
   },
   ketoconazole: {
     drug: "Ketoconazole",
@@ -481,7 +487,8 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
         "Cyclodextrin complexation",
       ],
     },
-    source: "FDA BCS Classification / Brouwers et al., AAPS J 2009",
+    source: "FDA BCS Classification / Dahan et al., AAPS J 2009",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/19876745/",
   },
   paracetamol: {
     drug: "Paracetamol (Acetaminophen)",
@@ -509,6 +516,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017 / WHO Prequalification BCS List",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   acetaminophen: {
     drug: "Acetaminophen (Paracetamol)",
@@ -536,6 +544,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017 / WHO Prequalification BCS List",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   hydrochlorothiazide: {
     drug: "Hydrochlorothiazide",
@@ -563,6 +572,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "Amidon et al., Pharm Res 1995 / FDA BCS Classification",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/7617530/",
   },
   carbamazepine: {
     drug: "Carbamazepine",
@@ -591,6 +601,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "WHO Biowaiver List / Lindenberg et al., EJP 2004",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/15296954/",
   },
   naproxen: {
     drug: "Naproxen",
@@ -618,7 +629,8 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
         "Liquid-filled capsules",
       ],
     },
-    source: "FDA BCS Classification / Brouwers et al., AAPS J 2009",
+    source: "FDA BCS Classification / Dahan et al., AAPS J 2009",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/19876745/",
   },
   metformin: {
     drug: "Metformin",
@@ -647,6 +659,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "ICH M9 Guideline / WHO Biowaiver List",
+    sourceUrl: "https://www.ich.org/page/biopharmaceutics-classification-system-based-biowaivers-m9",
   },
   ciprofloxacin: {
     drug: "Ciprofloxacin",
@@ -674,7 +687,8 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
         "IV infusion for severe infections",
       ],
     },
-    source: "FDA BCS Classification / Brouwers et al., AAPS J 2009",
+    source: "FDA BCS Classification / Dahan et al., AAPS J 2009",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/19876745/",
   },
   verapamil: {
     drug: "Verapamil",
@@ -703,6 +717,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017 / Lindenberg et al., EJP 2004",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   warfarin: {
     drug: "Warfarin",
@@ -730,6 +745,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   prednisolone: {
     drug: "Prednisolone",
@@ -758,6 +774,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "WHO Prequalification BCS List / FDA BCS Guidance",
+    sourceUrl: "https://iris.who.int/bitstream/handle/10665/338672/WHO-MVP-EMP-RHT-2021.01-eng.pdf",
   },
   trimethoprim: {
     drug: "Trimethoprim",
@@ -785,6 +802,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "WHO Biowaiver List / Lindenberg et al., EJP 2004",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/15296954/",
   },
   amlodipine: {
     drug: "Amlodipine",
@@ -812,6 +830,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Guidance 2017",
+    sourceUrl: "https://web.archive.org/web/20210414084138/https://www.fda.gov/media/70963/download",
   },
   fenofibrate: {
     drug: "Fenofibrate",
@@ -839,7 +858,8 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
         "Lipid-filled capsules",
       ],
     },
-    source: "FDA BCS Classification / Brouwers et al., AAPS J 2009",
+    source: "FDA BCS Classification / Dahan et al., AAPS J 2009",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/19876745/",
   },
   griseofulvin: {
     drug: "Griseofulvin",
@@ -868,6 +888,7 @@ const BCS_DATABASE: Record<string, BCSEntry> = {
       ],
     },
     source: "FDA BCS Classification / Amidon et al., Pharm Res 1995",
+    sourceUrl: "https://pubmed.ncbi.nlm.nih.gov/7617530/",
   },
 };
 

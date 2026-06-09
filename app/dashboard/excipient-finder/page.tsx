@@ -1,6 +1,24 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+
+interface ExcipientHistoryEntry {
+  dosageForm: string;
+  subDosageForm: string;
+  apiName: string;
+  timestamp: number;
+}
+
+const EXCIPIENT_HISTORY_KEY = "excipient-search-history";
+const MAX_HISTORY = 8;
+
+function timeAgo(ts: number): string {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
 export default function ExcipientFinder() {
   const [dosageForm, setDosageForm] = useState("");
@@ -20,6 +38,37 @@ export default function ExcipientFinder() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [generatingItemId, setGeneratingItemId] = useState<number | null>(null);
   const ITEMS_PER_PAGE = 10;
+
+  const [searchHistory, setSearchHistory] = useState<ExcipientHistoryEntry[]>([]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(EXCIPIENT_HISTORY_KEY);
+    if (stored) setSearchHistory(JSON.parse(stored));
+  }, []);
+
+  const saveToHistory = (entry: Omit<ExcipientHistoryEntry, 'timestamp'>) => {
+    setSearchHistory(prev => {
+      const filtered = prev.filter(h => !(h.dosageForm === entry.dosageForm && h.subDosageForm === entry.subDosageForm && h.apiName.toLowerCase() === entry.apiName.toLowerCase()));
+      const updated = [{ ...entry, timestamp: Date.now() }, ...filtered].slice(0, MAX_HISTORY);
+      localStorage.setItem(EXCIPIENT_HISTORY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const removeFromHistory = (ts: number) => {
+    setSearchHistory(prev => {
+      const updated = prev.filter(h => h.timestamp !== ts);
+      localStorage.setItem(EXCIPIENT_HISTORY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const applyHistoryEntry = (h: ExcipientHistoryEntry) => {
+    setDosageForm(h.dosageForm);
+    setSubDosageForm(h.subDosageForm);
+    setApiName(h.apiName);
+    performSearch(h.dosageForm, h.subDosageForm, h.apiName);
+  };
 
   const handleDownloadItemPDF = async (item: any) => {
     setGeneratingItemId(item.id);
@@ -343,22 +392,27 @@ export default function ExcipientFinder() {
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const performSearch = async (form: string, subForm: string, api: string) => {
     setLoading(true);
     setExpandedResultId(null);
     setCurrentPage(1);
     setSelectedCategory("All");
-    
+
     try {
-      const survey = await fetchLiteratureSurvey(apiName, dosageForm);
+      const survey = await fetchLiteratureSurvey(api, form);
       setLiteratureSurvey(survey);
-      setResults(getMockResults(dosageForm, subDosageForm, apiName));
+      setResults(getMockResults(form, subForm, api));
+      saveToHistory({ dosageForm: form, subDosageForm: subForm, apiName: api });
     } catch (e) {
       console.error(e);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await performSearch(dosageForm, subDosageForm, apiName);
   };
 
   // Pagination & Filtering Logic
@@ -480,6 +534,35 @@ export default function ExcipientFinder() {
           </button>
         </form>
       </div>
+
+      {searchHistory.length > 0 && results.length === 0 && (
+        <div className="glass-panel animate-fade-in" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem' }}>
+          <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Recent Searches
+          </h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {searchHistory.map(h => (
+              <div key={h.timestamp} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '0.6rem 1rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                onClick={() => applyHistoryEntry(h)}
+                onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-color)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.06)'; }}
+                onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.03)'; }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text-primary)' }}>{h.apiName}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                    {h.dosageForm}{h.subDosageForm ? ` › ${h.subDosageForm}` : ''}
+                  </span>
+                  <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)' }}>{timeAgo(h.timestamp)}</span>
+                </div>
+                <button onClick={e => { e.stopPropagation(); removeFromHistory(h.timestamp); }} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '0 0.25rem', fontSize: '1rem', lineHeight: 1 }}>×</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {results.length > 0 && (
         <div className="results-panel animate-fade-in" style={{ marginTop: '2rem' }}>

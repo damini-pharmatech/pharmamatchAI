@@ -1,6 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface BCSHistoryEntry {
+  drug: string;
+  bcsClass?: string;
+  timestamp: number;
+}
+
+const BCS_HISTORY_KEY = "bcs-search-history";
+const MAX_HISTORY = 8;
+
+function timeAgo(ts: number): string {
+  const diff = Math.floor((Date.now() - ts) / 1000);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
 
 type BCSClass = "I" | "II" | "III" | "IV";
 
@@ -43,6 +60,7 @@ interface BCSResult {
     formulations: string[];
   };
   source: string;
+  sourceUrl: string;
 }
 
 interface NotInDB {
@@ -97,10 +115,31 @@ export default function BCSClassifier() {
   const [error, setError] = useState<string | null>(null);
   const [solOpen, setSolOpen] = useState(false);
   const [permOpen, setPermOpen] = useState(false);
+  const [history, setHistory] = useState<BCSHistoryEntry[]>([]);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  useEffect(() => {
+    const stored = localStorage.getItem(BCS_HISTORY_KEY);
+    if (stored) setHistory(JSON.parse(stored));
+  }, []);
+
+  const saveToHistory = (drug: string, bcsClass?: string) => {
+    setHistory(prev => {
+      const filtered = prev.filter(h => h.drug.toLowerCase() !== drug.toLowerCase());
+      const updated = [{ drug, bcsClass, timestamp: Date.now() }, ...filtered].slice(0, MAX_HISTORY);
+      localStorage.setItem(BCS_HISTORY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const removeFromHistory = (ts: number) => {
+    setHistory(prev => {
+      const updated = prev.filter(h => h.timestamp !== ts);
+      localStorage.setItem(BCS_HISTORY_KEY, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const performSearch = async (drug: string) => {
     setLoading(true);
     setResult(null);
     setError(null);
@@ -108,14 +147,22 @@ export default function BCSClassifier() {
     setPermOpen(false);
 
     try {
-      const res = await fetch(`/api/bcs-classify?drug=${encodeURIComponent(query.trim())}`);
+      const res = await fetch(`/api/bcs-classify?drug=${encodeURIComponent(drug)}`);
       const data: APIResponse = await res.json();
       setResult(data);
+      const cls = data.found === true ? (data as BCSResult).class : undefined;
+      saveToHistory(drug, cls);
     } catch {
       setError("Failed to reach classification service. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    await performSearch(query.trim());
   };
 
   const bcs = result?.found === true ? (result as BCSResult) : null;
@@ -170,6 +217,34 @@ export default function BCSClassifier() {
           </button>
         </form>
       </div>
+
+      {history.length > 0 && (
+        <div className="glass-panel animate-fade-in" style={{ marginTop: '1.5rem', padding: '1rem 1.25rem' }}>
+          <h4 style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Recent Searches
+          </h4>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+            {history.map(h => (
+              <div key={h.timestamp} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '0.3rem 0.75rem', fontSize: '0.82rem', cursor: 'pointer', transition: 'all 0.2s' }}
+                onMouseOver={e => (e.currentTarget.style.borderColor = 'var(--accent-color)')}
+                onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)')}
+              >
+                <span onClick={() => { setQuery(h.drug); performSearch(h.drug); }} style={{ color: 'var(--text-primary)', cursor: 'pointer' }}>{h.drug}</span>
+                {h.bcsClass && (
+                  <span style={{ backgroundColor: 'rgba(0,240,255,0.1)', color: 'var(--accent-color)', borderRadius: '4px', padding: '0 0.3rem', fontSize: '0.75rem', fontWeight: 600 }}>
+                    {h.bcsClass}
+                  </span>
+                )}
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem', marginLeft: '0.2rem' }}>{timeAgo(h.timestamp)}</span>
+                <button onClick={() => removeFromHistory(h.timestamp)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '0 0 0 0.2rem', fontSize: '0.85rem', lineHeight: 1 }}>×</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && (
         <div
@@ -405,15 +480,48 @@ export default function BCSClassifier() {
                             <p style={{ color: "#475569", fontSize: "0.775rem", fontStyle: "italic", lineHeight: 1.5, marginBottom: "0.4rem" }}>
                               Example: {s.example}
                             </p>
-                            <a
-                              href={s.referenceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="reference-link"
-                              style={{ fontSize: "0.75rem" }}
-                            >
-                              🔗 {s.reference}
-                            </a>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginTop: "0.25rem" }}>
+                              <a
+                                href={s.referenceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="reference-link"
+                                style={{ fontSize: "0.75rem", flex: 1, minWidth: 0 }}
+                              >
+                                🔗 {s.reference}
+                              </a>
+                              <a
+                                href={s.referenceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                title="Download paper"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "0.25rem",
+                                  fontSize: "0.7rem",
+                                  padding: "0.2rem 0.55rem",
+                                  borderRadius: "4px",
+                                  backgroundColor: "rgba(0,240,255,0.08)",
+                                  color: "var(--accent-color)",
+                                  border: "1px solid rgba(0,240,255,0.25)",
+                                  textDecoration: "none",
+                                  whiteSpace: "nowrap",
+                                  flexShrink: 0,
+                                  transition: "all 0.2s",
+                                }}
+                                onMouseOver={e => { (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(0,240,255,0.15)"; }}
+                                onMouseOut={e => { (e.currentTarget as HTMLElement).style.backgroundColor = "rgba(0,240,255,0.08)"; }}
+                              >
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                  <polyline points="7 10 12 15 17 10"/>
+                                  <line x1="12" y1="15" x2="12" y2="3"/>
+                                </svg>
+                                Download
+                              </a>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -459,9 +567,20 @@ export default function BCSClassifier() {
               ))}
             </ul>
             <div style={{ marginTop: "1rem", display: "flex", gap: "1.5rem", flexWrap: "wrap" }}>
-              <span style={{ color: "var(--text-secondary)", fontSize: "0.8rem" }}>
+              <a
+                href={bcs.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="reference-link"
+                style={{ fontSize: "0.8rem", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
+              >
                 📄 {bcs.source}
-              </span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15 3 21 3 21 9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+              </a>
               {bcs.pubchemUrl && (
                 <a
                   href={bcs.pubchemUrl}
