@@ -19,9 +19,9 @@ export default function RootLayout({
       </head>
       <body>
         <nav className="navbar">
-          <div className="logo" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <a href="/" className="logo" style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--text-primary)', textDecoration: 'none' }}>
             Pharmamatch<span style={{ color: 'var(--accent-color)' }}>AI</span>
-          </div>
+          </a>
           <div className="nav-links">
             <a href="/" className="nav-link">Home</a>
             <a href="/dashboard" className="btn btn-primary" style={{ padding: '0.5rem 1rem' }}>Dashboard</a>
